@@ -208,8 +208,8 @@ access-control: fd42:42:42:42::/112 allow' >>/etc/unbound/openvpn.conf
 }
 
 function installQuestions() {
-	echo "Welcome to the TBMODS!"
-	echo "The git repository is available at: https://github.com/mixserrm999/"
+	echo "Welcome to the OZMZVPN!"
+	echo "The git repository is available at: https://github.com/johndave9296/OZMZVPN"
 	echo ""
 
 	echo "I need to ask you a few questions before starting the setup."
@@ -228,7 +228,7 @@ function installQuestions() {
 	if [[ $APPROVE_IP =~ n ]]; then
 		read -rp "IP address: " -e -i "$IP" IP
 	fi
-	# If $IP is a private IP address, the server must be behind NAT
+	# If $IP is a private IP address, the server must be behind NAT
 	if echo "$IP" | grep -qE '^(10\.|172\.1[6789]\.|172\.2[0-9]\.|172\.3[01]\.|192\.168)'; then
 		echo ""
 		echo "It seems this server is behind NAT. What is its public IPv4 address or hostname?"
@@ -261,7 +261,7 @@ function installQuestions() {
 	done
 	echo ""
 	echo "What port do you want OpenVPN to listen to?"
-	echo "   1) Default: 443"
+	echo "   1) Default: 1194"
 	echo "   2) Custom"
 	echo "   3) Random [49152-65535]"
 	until [[ $PORT_CHOICE =~ ^[1-3]$ ]]; do
@@ -269,7 +269,7 @@ function installQuestions() {
 	done
 	case $PORT_CHOICE in
 	1)
-		PORT="443"
+		PORT="1194"
 		;;
 	2)
 		until [[ $PORT =~ ^[0-9]+$ ]] && [ "$PORT" -ge 1 ] && [ "$PORT" -le 65535 ]; do
@@ -724,7 +724,7 @@ function installOpenVPN() {
 			openssl dhparam -out dh.pem $DH_KEY_SIZE
 		fi
 
-		./easyrsa build-server-full "TBMODS" nopass
+		./easyrsa build-server-full "OZMZVPN" nopass
 		EASYRSA_CRL_DAYS=3650 ./easyrsa gen-crl
 
 		case $TLS_SIG in
@@ -745,7 +745,7 @@ function installOpenVPN() {
 	fi
 
 	# Move all the generated files
-	cp pki/ca.crt pki/private/ca.key "pki/issued/TBMODS.crt" "pki/private/TBMODS.key" /etc/openvpn/easy-rsa/pki/crl.pem /etc/openvpn
+	cp pki/ca.crt pki/private/ca.key "pki/issued/OZMZVPN.crt" "pki/private/OZMZVPN.key" /etc/openvpn/easy-rsa/pki/crl.pem /etc/openvpn
 	if [[ $DH_TYPE == "2" ]]; then
 		cp dh.pem /etc/openvpn
 	fi
@@ -875,8 +875,8 @@ push "redirect-gateway ipv6"' >>/etc/openvpn/server.conf
 
 	echo "crl-verify crl.pem
 ca ca.crt
-cert TBMODS.crt
-key TBMODS.key
+cert OZMZVPN.crt
+key OZMZVPN.key
 auth $HMAC_ALG
 cipher $CIPHER
 ncp-ciphers $CIPHER
@@ -908,7 +908,7 @@ verb 3" >>/etc/openvpn/server.conf
 	# If SELinux is enabled and a custom port was selected, we need this
 	if hash sestatus 2>/dev/null; then
 		if sestatus | grep "Current mode" | grep -qs "enforcing"; then
-			if [[ $PORT != '443' ]]; then
+			if [[ $PORT != '1194' ]]; then
 				semanage port -a -t openvpn_port_t -p "$PROTOCOL" "$PORT"
 			fi
 		fi
@@ -1032,7 +1032,7 @@ nobind
 persist-key
 persist-tun
 remote-cert-tls server
-verify-x509-name TBMODS name
+verify-x509-name OZMZVPN name
 auth $HMAC_ALG
 tun-mtu 1500
 mssfix 1500
@@ -1109,7 +1109,7 @@ function newClient() {
 	fi
 
 	# Generates the custom client.ovpn
-	cp /etc/openvpn/client-template.txt "$homeDir/vpn/TBMODS/accounts/$CLIENT.ovpn"
+	cp /etc/openvpn/client-template.txt "$homeDir/vpn/OZMZVPN/accounts/$CLIENT.ovpn"
 	{
 		echo "<ca>"
 		cat "/etc/openvpn/easy-rsa/pki/ca.crt"
@@ -1136,10 +1136,10 @@ function newClient() {
 			echo "</tls-auth>"
 			;;
 		esac
-	} >>"$homeDir/vpn/TBMODS/accounts/$CLIENT.ovpn"
+	} >>"$homeDir/vpn/OZMZVPN/accounts/$CLIENT.ovpn"
 
 	echo ""
-	echo "The configuration file has been written to $homeDir/vpn/TBMODS/accounts/$CLIENT.ovpn."
+	echo "The configuration file has been written to $homeDir/vpn/OZMZVPN/accounts/$CLIENT.ovpn."
 	echo "Download the .ovpn file and import it in your OpenVPN client."
 
 	exit 0
@@ -1171,7 +1171,7 @@ function revokeClient() {
 	cp /etc/openvpn/easy-rsa/pki/crl.pem /etc/openvpn/crl.pem
 	chmod 644 /etc/openvpn/crl.pem
 	find /home/ -maxdepth 2 -name "$CLIENT.ovpn" -delete
-	rm -f "/root/vpn/TBMODS/accounts/$CLIENT.ovpn"
+	rm -f "/root/vpn/OZMZVPN/accounts/$CLIENT.ovpn"
 	sed -i "/^$CLIENT,.*/d" /etc/openvpn/ipp.txt
 
 	echo ""
@@ -1251,7 +1251,7 @@ function removeOpenVPN() {
 		# SELinux
 		if hash sestatus 2>/dev/null; then
 			if sestatus | grep "Current mode" | grep -qs "enforcing"; then
-				if [[ $PORT != '443' ]]; then
+				if [[ $PORT != '1194' ]]; then
 					semanage port -d -t openvpn_port_t -p "$PROTOCOL" "$PORT"
 				fi
 			fi
@@ -1292,8 +1292,8 @@ function removeOpenVPN() {
 }
 
 function manageMenu() {
-	echo "Welcome to TBMODS!"
-	echo "The git repository is available at: https://github.com/mixserrm999/"
+	echo "Welcome to OZMZVPN!"
+	echo "The git repository is available at: https://github.com/johndave9296/OZMZVPN"
 	echo ""
 	echo "It looks like OpenVPN is already installed."
 	echo ""
