@@ -9,8 +9,7 @@ cd vpn
 mkdir TBMODS
 cd TBMODS
 mkdir accounts
-git clone https://github.com/mixserrm999/AutoScript-OPENVPN.git
-cd AutoScript-OPENVPN
+wget https://raw.githubusercontent.com/mixserrm999/AutoScript-OPENVPN/main/TBMODS-OpenVPN.sh
 chmod +x TBMODS-OpenVPN.sh
 ./TBMODS-OpenVPN.sh
 ```
