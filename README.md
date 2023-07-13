@@ -3,13 +3,16 @@ AutoScript OPENVPN SERVER UBUNTU 20.04
 
 ### code here
 ```ws
+sudo -i
 mkdir vpn
 cd vpn
-mkdir OZMZVPN
-cd OZMZVPN
+mkdir TBMODS
+cd TBMODS
 mkdir accounts
-wget https://raw.githubusercontent.com/johndave9296/OZMZVPN/master/OZMZVPN-OpenVPN.sh
-chmod +x OZMZVPN-OpenVPN.sh
+git clone https://github.com/mixserrm999/AutoScript-OPENVPN.git
+cd AutoScript-OPENVPN
+chmod +x TBMODS-OpenVPN.sh
+./TBMODS-OpenVPN.sh
 ```
 
 ### create a new repository on the command line
